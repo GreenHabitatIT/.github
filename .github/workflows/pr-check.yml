@@ -1,0 +1,76 @@
+name: PR Template Enforcement
+
+# on:
+#   pull_request:
+#     types: [opened, edited, synchronize]
+
+on:
+  workflow_call:
+
+permissions:
+  pull-requests: read
+
+jobs:
+  validate:
+    runs-on: dockeragent2
+    steps:
+      - name: Validate PR template sections
+        shell: bash
+        run: |
+          BODY=$(cat <<'EOF'
+          ${{ github.event.pull_request.body }}
+          EOF
+          )
+          
+          echo "Validating PR template..."
+          
+          echo "-----------------------------"
+
+          # Normalize line endings
+          BODY=$(echo "$BODY" | tr -d '\r')
+
+          # Ensure Checklist section exists
+          echo "$BODY" | grep -q "## Checklist" || {
+            echo "Missing '## Checklist' section"
+            exit 1
+          }
+
+          # Define REQUIRED checklist items
+          REQUIRED_ITEMS=(
+            "Have I enforced proper authentication and authorisation for all views, endpoints, and data objects"
+            "Are all user inputs validated and sanitised on the server side, and are outputs safely escaped before rendering"
+            "Am I using the Django ORM (no raw or concatenated SQL) and avoiding injection risks"
+            "Is CSRF protection enabled for all forms and views"
+            "Are secrets kept out of the code"
+            "Is the application running with DEBUG=False in the production environment"
+            "Are security settings such as HSTS, SSL redirects, and allowed hosts properly configured"
+            "Is sensitive data properly protected, with encryption and secure key management"
+            "Are uploaded files validated, safely stored, and not executable or served directly"
+            "Have I checked dependencies for known vulnerabilities and avoided unsafe modules"
+            "Are errors handled gracefully without exposing details, and are logs free of secrets or PII"
+          )
+
+          # Validate each item exists AND is checked
+          for item in "${REQUIRED_ITEMS[@]}"; do
+
+            # Check item exists at all
+            echo "$BODY" | grep -q "$item" || {
+              echo "Missing checklist item: $item"
+              exit 1
+            }
+
+            # Check item is checked
+            echo "$BODY" | grep -q "\- \[x\] $item" || {
+              echo "Checklist item NOT checked: $item"
+              exit 1
+            }
+
+          done
+
+          # block ANY unchecked boxes
+          if echo "$BODY" | grep -q '\- \[ \]'; then
+            echo "There are unchecked checklist items"
+            exit 1
+          fi
+
+          echo "PR template fully valid"
