@@ -7,9 +7,6 @@ name: PR Template Enforcement
 on:
   workflow_call:
 
-permissions:
-  pull-requests: read
-
 jobs:
   validate:
     runs-on: dockeragent2
