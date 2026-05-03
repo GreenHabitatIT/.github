@@ -1,9 +1,5 @@
 name: PR Template Enforcement
 
-# on:
-#   pull_request:
-#     types: [opened, edited, synchronize]
-
 on:
   workflow_call:
 
