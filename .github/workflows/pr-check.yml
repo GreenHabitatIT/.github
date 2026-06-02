@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   validate:
-    runs-on: [dockeragent2, self-hosted, linux]
+    runs-on: [dockeragent2, self-hosted, Linux, X64]
     steps:
       - name: Validate PR template sections
         shell: bash
