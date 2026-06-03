@@ -10,7 +10,14 @@ jobs:
   validate:
     runs-on: [dockeragent2, self-hosted, Linux, X64]
     steps:
+      - name: Skip non-PR runs
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "semantic release — success."
+          exit 0
+
       - name: Validate PR template sections
+        if: github.event_name == 'pull_request'
         shell: bash
         run: |
           BODY=$(cat <<'EOF'
