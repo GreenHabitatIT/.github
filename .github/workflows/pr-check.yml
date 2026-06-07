@@ -33,8 +33,8 @@ jobs:
           BODY=$(echo "$BODY" | tr -d '\r')
 
           # Ensure Checklist section exists
-          echo "$BODY" | grep -q "## Checklist" || {
-            echo "Missing '## Checklist' section"
+          (echo "$BODY" | grep -q "## Checklist" || echo "$BODY" | grep -q "## Policy Check List") || {
+            echo "Missing '## Checklist' or '## Policy Checklist' section"
             exit 1
           }
 
